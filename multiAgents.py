@@ -178,55 +178,73 @@ class MinimaxAgent(MultiAgentSearchAgent):
         def getbestaction(state : GameState):
             
             actions = state.getLegalActions(0)
+            max_value = float('-inf')
+            action_v_list = []
             
             for action in actions:
-                v = max(v,value(state.generateSuccessor(state, action), 1, 0)) 
+                action_v = value(state.generateSuccessor(0, action), 0, 1)
+                action_v_list.append([action , action_v[1]])
             
             
-            return max(value())
+            for item in action_v_list:
+                if item[1] > max_value:
+                    max_value = item[1]
+                    chosen_action = item[0]
+            
+            return chosen_action
             
             
-        def value(state : GameState, depth, agent):
+        def value(state : GameState, depth, agent_index):
             
-            if agent == gameState.getNumAgents():
-                agent = 0
+            if agent_index >= state.getNumAgents():
+                agent_index = 0
                 depth += 1
                             
             
             if (depth == self.depth or state.isWin() or state.isLose()):
-                return self.evaluationFunction(state)
+                return ["", self.evaluationFunction(state)]
             
-            elif agent == 0:
-                return maxvalue(state, depth, agent)
+            elif agent_index == 0:
+                return maxvalue(state, depth, agent_index)
             
             else:
-                return minvalue(gameState, depth, agent)
+                return minvalue(state, depth, agent_index)
             
 
             
             
-        def maxvalue(state : GameState, depth, agent):
+        def maxvalue(state : GameState, depth, agent_index):
             
-            v = float('-inf')
-            actions = state.getLegalActions(agent)
+            v = ["",float('-inf')]
+            actions = state.getLegalActions(agent_index)
+            
+            if not actions:
+                return ["", self.evaluationFunction(state)]
             
             for action in actions:
-                v = max(v,value(state.generateSuccessor(state, action), depth, agent + 1)) 
+                next_value = value(state.generateSuccessor(agent_index, action), depth, agent_index + 1)
+                action_value = next_value[1]
+                v = [action, max(v[1], action_value)] 
             
             return v
         
         
-        def minvalue(state : GameState, depth, agent):
+        def minvalue(state : GameState, depth, agent_index):
             
-            v = float('inf')
-            actions = state.getLegalActions(agent)
+            v = ["",float('inf')]
+            actions = state.getLegalActions(agent_index) 
+            
+            if not actions:
+                return ["", self.evaluationFunction(state)]
             
             for action in actions:
-                v = min(v,value(state.generateSuccessor(state, action), depth, agent + 1)) 
+                next_value = value(state.generateSuccessor(agent_index, action), depth, agent_index + 1)
+                action_value = next_value[1]
+                v = [action, min(v[1], action_value)]
             
             return v
-            
         
+            
         return getbestaction(gameState)
         
             
