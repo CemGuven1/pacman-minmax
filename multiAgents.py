@@ -407,84 +407,62 @@ def betterEvaluationFunction(currentGameState: GameState):
     DESCRIPTION: <write something here so we know what you did>
     """
     "*** YOUR CODE HERE ***"
-    food = currentGameState.getFood().asList()
+    foods = currentGameState.getFood().asList()
     ghosts = currentGameState.getGhostStates()
-    pacmanPosition = currentGameState.getPacmanPosition()
-    activeGhosts = [] # Keep active ghosts(can eat pacman)
-    scaredGhosts = [] # Keep scared ghosts(pacman should eat them for extra points)
-    totalCapsules = len(currentGameState.getCapsules()) # Keep total capsules
-    totalFood = len(food) # Keep total remaining food
-    myEval = 0 # Evaluation value
+    pacmanPos = currentGameState.getPacmanPosition()
+    capsules = currentGameState.getCapsules()
+    score = currentGameState.getScore()
+    
+    activeGhosts = [] 
+    scaredGhosts = [] 
+    
+    distance_to_food = []
+    distance_to_actghost = []
+    distance_to_scarghost = []
+    
+    totalFood = len(foods)
+    totalCapsules = len(capsules)
+    
+    evaluation = 0
 
-    # Fix active and scared ghosts #
+
     for ghost in ghosts:
-        if ghost.scaredTimer: # Is scared ghost
+        if ghost.scaredTimer: 
             scaredGhosts.append(ghost)
         else:
             activeGhosts.append(ghost)
+            
+    
+    #distances#
+    for food in foods:
+        distance_to_food.append(manhattanDistance(pacmanPos,food))
+
+    for ghost in activeGhosts:
+        distance_to_actghost.append(manhattanDistance(pacmanPos,ghost.getPosition()))
+
+    for ghost in scaredGhosts:
+        distance_to_scarghost.append(manhattanDistance(pacmanPos,ghost.getPosition()))
 
 
-    myEval +=  1.5 * currentGameState.getScore()
-    myEval += -10 * totalFood
-    myEval += -30 * totalCapsules
 
-    # Keep distances from food, active and scared ghosts #
-    foodDistances = []
-    activeGhostsDistances = []
-    scaredGhostsDistances = []
+    evaluation -= 10  * totalFood
+    evaluation -= 100 * totalCapsules
+    
+    if distance_to_food:
+        evaluation -= min(distance_to_food) * 0.7
+    
+    for distance in distance_to_food:
+        evaluation -= distance * 0.2
+    
+    if distance_to_scarghost:
+        evaluation = -min(distance_to_scarghost) * 10
 
-    # Find distances #
-    for item in food:
-        foodDistances.append(manhattanDistance(pacmanPosition,item))
 
-    for item in activeGhosts:
-        scaredGhostsDistances.append(manhattanDistance(pacmanPosition,item.getPosition()))
+    for distance in distance_to_actghost:
+        if distance == 1:
+            evaluation -= -99999
 
-    for item in scaredGhosts:
-        scaredGhostsDistances.append(manhattanDistance(pacmanPosition,item.getPosition()))
-
-    # Fix evaluation based on food distances  #
-    # It is very bad for pacman to have close #
-    # food. He must eat it.                   #
-    # Close food weight: -1                   #
-    # Quite close food weight: -0.5           #
-    # Far away food weight: -0.2              #
-    for item in foodDistances:
-        if item < 3:
-            myEval += -1 * item
-        if item < 7:
-            myEval += -0.5 * item
-        else:
-            myEval += -0.2 * item
-
-    # Fix evaluation based on scared ghosts distances    #
-    # It is very bad for pacman to have close scared     #
-    # ghosts. He must eat them so as to gain many points #
-    # We should prefer to eat a ghost rather than eat a  #
-    # close food                                         #
-    # Close scared ghosts weight: -20                    #
-    # Quite close scared ghosts weight: -10              #
-    for item in scaredGhostsDistances:
-        if item < 3:
-            myEval -= 20 * item
-        else:
-            myEval -= 10 * item
-
-    # Fix evaluation base on active ghosts distances    #
-    # Pacman should avoid active ghosts                 #
-    # Close ghost weight: 3                             #
-    # Quite close ghost weight: 2                       #
-    # Far away ghosts weight: 0.5                       #
-    # We should prefer ghosts remaining far away        #
-    for item in activeGhostsDistances:
-        if item < 2:
-            myEval -= 100 * item
-        elif item < 6:
-            myEval -= 2 * item
-        else:
-            myEval -= 1 * item
-
-    return myEval
+    return evaluation + 2*score
 
     
 
