@@ -309,7 +309,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                 action_value = next_value[1]
                 v = [action, max(v[1], action_value)] 
                 
-                if v[1] >= beta:
+                if v[1] > beta:
                     return v
                 alpha = max(alpha, v[1])
             
@@ -329,7 +329,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                 action_value = next_value[1]
                 v = [action, min(v[1], action_value)]
                 
-                if v[1] <= alpha:
+                if v[1] < alpha:
                     return v
                 beta = min(beta, v[1])
             
